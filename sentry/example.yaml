@@ -1,0 +1,16 @@
+# 日志配置示例
+log:
+  level: info
+  directory: ./logs
+  filename: app.log
+  to_stdout: true
+  max_size: 100
+  max_backups: 10
+  max_age: 30
+  compress: true
+
+sentry:
+  enabled: true
+  dsn: "your-sentry-dsn-here"
+  environment: production
+  debug: false
