@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
@@ -128,8 +129,8 @@ func NewMetrics(namespace string) *DefaultMetrics {
 	}
 	
 	// 注册默认的Go运行时指标
-	registry.MustRegister(prometheus.NewGoCollector())
-	registry.MustRegister(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	registry.MustRegister(collectors.NewGoCollector())
+	registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	
 	return m
 }

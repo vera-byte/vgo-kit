@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -170,7 +170,7 @@ func (t *translator) LoadTranslations(dir string) error {
 // 返回值:
 //   - error: 错误信息
 func (t *translator) loadLanguageFile(lang SupportedLanguage, filePath string) error {
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
