@@ -1,0 +1,22 @@
+# 日志文件
+*.log
+logs/
+sentry/logs/
+
+# 测试覆盖率文件
+*.out
+coverage.txt
+
+# 构建产物
+/bin/
+/dist/
+
+# IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
