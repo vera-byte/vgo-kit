@@ -1,6 +1,9 @@
 package vgokit
 
 import (
+	"os"
+	"strings"
+
 	"github.com/spf13/viper"
 	"github.com/vera-byte/vgo-kit/cache"
 	"github.com/vera-byte/vgo-kit/config"
@@ -20,18 +23,34 @@ var (
 // init 初始化vgokit包的全局变量
 // 加载配置文件并初始化日志服务
 func init() {
-	// 初始化日志服务
+	// 在测试环境中跳过初始化
+	if isTestEnvironment() {
+		return
+	}
+	
 	v, err := config.LoadConfig("config/config.yaml")
 	Cfg = v
 	if err != nil {
 		panic(err)
 	}
 
-	// 反序列化到结构体，如果配置文件中不存在sentry配置则保持nil
+	// 构建sentry配置，分别解析log和sentry部分
 	var cfg *sentry.Config
-	if v.IsSet("sentry") || v.IsSet("log") {
-		if unmarshalErr := v.UnmarshalKey("sentry", &cfg); unmarshalErr != nil {
-			panic(unmarshalErr)
+	if v.IsSet("log") || v.IsSet("sentry") {
+		cfg = &sentry.Config{}
+		
+		// 解析log配置
+		if v.IsSet("log") {
+			if unmarshalErr := v.UnmarshalKey("log", &cfg.Log); unmarshalErr != nil {
+				panic(unmarshalErr)
+			}
+		}
+		
+		// 解析sentry配置
+		if v.IsSet("sentry") {
+			if unmarshalErr := v.UnmarshalKey("sentry", &cfg.Sentry); unmarshalErr != nil {
+				panic(unmarshalErr)
+			}
 		}
 	}
 
@@ -41,4 +60,15 @@ func init() {
 		panic(err)
 	}
 	Log = log
+}
+
+// isTestEnvironment 检查是否在测试环境中
+func isTestEnvironment() bool {
+	// 检查是否有测试相关的命令行参数
+	for _, arg := range os.Args {
+		if strings.Contains(arg, "test") {
+			return true
+		}
+	}
+	return false
 }

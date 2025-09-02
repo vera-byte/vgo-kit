@@ -1,0 +1,35 @@
+# VGO Kit 测试配置文件
+server:
+  host: localhost
+  port: 8080
+
+log:
+  level: info
+  directory: logs
+  filename: iam.log
+  stdout: true
+  max_size: 100
+  max_backups: 3
+  max_age: 28
+  compress: true
+
+sentry:
+  enabled: false
+  dsn: "https://d019949ed7dddcc9ea45a73a1144685d@sentry.mailevw.com/18"
+  environment: "development"
+  debug: true
+
+cache:
+  redis:
+    host: localhost
+    port: 6379
+    password: ""
+    db: 0
+
+metrics:
+  enabled: true
+  port: 9090
+
+ratelimit:
+  enabled: true
+  requests_per_second: 100
