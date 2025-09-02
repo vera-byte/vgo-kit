@@ -38,7 +38,7 @@ func InitLogger(cfg *Config) (*Logger, error) {
 
 	// 输出到文件
 	if cfg.Log.Directory != "" && cfg.Log.Filename != "" {
-		if err := os.MkdirAll(cfg.Log.Directory, 0755); err != nil {
+		if err := os.MkdirAll(cfg.Log.Directory, 0750); err != nil {
 			return nil, fmt.Errorf("failed to create log directory: %w", err)
 		}
 

@@ -36,7 +36,9 @@ func NewPostgresStore(dsn string) (*PostgresStore, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if pingErr := db.PingContext(ctx); pingErr != nil {
-		db.Close()
+		if closeErr := db.Close(); closeErr != nil {
+			return nil, fmt.Errorf("db ping failed: %w, close error: %v", pingErr, closeErr)
+		}
 		return nil, fmt.Errorf("db ping failed: %w", pingErr)
 	}
 
@@ -49,7 +51,9 @@ func NewPostgresStore(dsn string) (*PostgresStore, error) {
 	// 创建dbr连接
 	conn, err := dbr.Open("postgres", dsn, nil)
 	if err != nil {
-		db.Close()
+		if closeErr := db.Close(); closeErr != nil {
+			return nil, fmt.Errorf("dbr open failed: %w, close error: %v", err, closeErr)
+		}
 		return nil, fmt.Errorf("dbr open failed: %w", err)
 	}
 

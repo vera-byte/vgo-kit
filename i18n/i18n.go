@@ -170,7 +170,18 @@ func (t *translator) LoadTranslations(dir string) error {
 // 返回值:
 //   - error: 错误信息
 func (t *translator) loadLanguageFile(lang SupportedLanguage, filePath string) error {
-	data, err := os.ReadFile(filePath)
+	// 验证文件路径，防止路径遍历攻击
+	cleanPath := filepath.Clean(filePath)
+	if strings.Contains(cleanPath, "..") {
+		return fmt.Errorf("invalid file path: %s", filePath)
+	}
+	
+	// 确保文件扩展名为 .json
+	if !strings.HasSuffix(cleanPath, ".json") {
+		return fmt.Errorf("invalid file extension, expected .json: %s", filePath)
+	}
+	
+	data, err := os.ReadFile(cleanPath)
 	if err != nil {
 		return err
 	}
