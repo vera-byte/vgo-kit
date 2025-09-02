@@ -1,8 +1,9 @@
 package vgokit
 
 import (
-	"github.com/vera-byte/vgo-kit/config"
 	"testing"
+
+	"github.com/vera-byte/vgo-kit/config"
 )
 
 // TestPackageInitialization 测试包的初始化
