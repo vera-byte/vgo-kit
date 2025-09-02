@@ -22,10 +22,10 @@ type RateLimiter interface {
 
 // RedisRateLimiter Redis实现的速率限制器
 type RedisRateLimiter struct {
-	client   *redis.Client
-	limit    int           // 限制数量
-	window   time.Duration // 时间窗口
-	prefix   string        // key前缀
+	client *redis.Client
+	limit  int           // 限制数量
+	window time.Duration // 时间窗口
+	prefix string        // key前缀
 }
 
 // NewRedisRateLimiter 创建Redis速率限制器
@@ -216,14 +216,14 @@ func (m *MemoryRateLimiter) GetRemaining(ctx context.Context, key string) (int, 
 
 // RateLimitConfig 速率限制配置
 type RateLimitConfig struct {
-	Enabled    bool          `yaml:"enabled" json:"enabled"`
-	Type       string        `yaml:"type" json:"type"` // "redis" or "memory"
-	Limit      int           `yaml:"limit" json:"limit"`
-	Window     time.Duration `yaml:"window" json:"window"`
-	Prefix     string        `yaml:"prefix" json:"prefix"`
-	RedisAddr  string        `yaml:"redis_addr" json:"redis_addr"`
-	RedisDB    int           `yaml:"redis_db" json:"redis_db"`
-	RedisPass  string        `yaml:"redis_pass" json:"redis_pass"`
+	Enabled   bool          `yaml:"enabled" json:"enabled"`
+	Type      string        `yaml:"type" json:"type"` // "redis" or "memory"
+	Limit     int           `yaml:"limit" json:"limit"`
+	Window    time.Duration `yaml:"window" json:"window"`
+	Prefix    string        `yaml:"prefix" json:"prefix"`
+	RedisAddr string        `yaml:"redis_addr" json:"redis_addr"`
+	RedisDB   int           `yaml:"redis_db" json:"redis_db"`
+	RedisPass string        `yaml:"redis_pass" json:"redis_pass"`
 }
 
 // DefaultRateLimitConfig 默认速率限制配置

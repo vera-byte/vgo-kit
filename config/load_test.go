@@ -12,7 +12,7 @@ func TestLoadConfig(t *testing.T) {
 	// 创建临时配置文件
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test_config.yaml")
-	
+
 	// 写入测试配置内容
 	configContent := `
 server:
@@ -71,7 +71,7 @@ func TestLoadConfigWithEnvironmentVariables(t *testing.T) {
 	// 创建临时配置文件
 	tempDir := t.TempDir()
 	configFile := filepath.Join(tempDir, "test_config.yaml")
-	
+
 	configContent := `
 server:
   host: localhost

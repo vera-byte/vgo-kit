@@ -18,7 +18,7 @@ func LoadConfig(configPath string) (*viper.Viper, error) {
 
 	// 2. 自动读取环境变量（可选）
 	v.AutomaticEnv()
-	v.SetEnvPrefix("VGO") // 环境变量前缀 VGO_SERVER_HOST
+	v.SetEnvPrefix("VGO")                              // 环境变量前缀 VGO_SERVER_HOST
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_")) // 将配置键中的点替换为下划线
 
 	// 3. 读取配置文件

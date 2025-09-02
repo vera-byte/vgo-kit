@@ -27,7 +27,7 @@ func init() {
 	if isTestEnvironment() {
 		return
 	}
-	
+
 	v, err := config.LoadConfig("config/config.yaml")
 	Cfg = v
 	if err != nil {
@@ -38,14 +38,14 @@ func init() {
 	var cfg *sentry.Config
 	if v.IsSet("log") || v.IsSet("sentry") {
 		cfg = &sentry.Config{}
-		
+
 		// 解析log配置
 		if v.IsSet("log") {
 			if unmarshalErr := v.UnmarshalKey("log", &cfg.Log); unmarshalErr != nil {
 				panic(unmarshalErr)
 			}
 		}
-		
+
 		// 解析sentry配置
 		if v.IsSet("sentry") {
 			if unmarshalErr := v.UnmarshalKey("sentry", &cfg.Sentry); unmarshalErr != nil {

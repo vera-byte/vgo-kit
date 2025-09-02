@@ -59,6 +59,7 @@ type translator struct {
 // NewTranslator 创建新的翻译器实例
 // 参数:
 //   - lang: 默认语言
+//
 // 返回值:
 //   - Translator: 翻译器实例
 func NewTranslator(lang SupportedLanguage) Translator {
@@ -72,6 +73,7 @@ func NewTranslator(lang SupportedLanguage) Translator {
 // 参数:
 //   - key: 翻译键
 //   - args: 格式化参数
+//
 // 返回值:
 //   - string: 翻译后的文本
 func (t *translator) Translate(key string, args ...interface{}) string {
@@ -83,6 +85,7 @@ func (t *translator) Translate(key string, args ...interface{}) string {
 //   - lang: 目标语言
 //   - key: 翻译键
 //   - args: 格式化参数
+//
 // 返回值:
 //   - string: 翻译后的文本
 func (t *translator) TranslateWithLang(lang SupportedLanguage, key string, args ...interface{}) string {
@@ -136,6 +139,7 @@ func (t *translator) SetLanguage(lang SupportedLanguage) {
 // LoadTranslations 加载翻译文件
 // 参数:
 //   - dir: 翻译文件目录
+//
 // 返回值:
 //   - error: 错误信息
 func (t *translator) LoadTranslations(dir string) error {
@@ -167,6 +171,7 @@ func (t *translator) LoadTranslations(dir string) error {
 // 参数:
 //   - lang: 语言类型
 //   - filePath: 文件路径
+//
 // 返回值:
 //   - error: 错误信息
 func (t *translator) loadLanguageFile(lang SupportedLanguage, filePath string) error {
@@ -175,12 +180,12 @@ func (t *translator) loadLanguageFile(lang SupportedLanguage, filePath string) e
 	if strings.Contains(cleanPath, "..") {
 		return fmt.Errorf("invalid file path: %s", filePath)
 	}
-	
+
 	// 确保文件扩展名为 .json
 	if !strings.HasSuffix(cleanPath, ".json") {
 		return fmt.Errorf("invalid file extension, expected .json: %s", filePath)
 	}
-	
+
 	data, err := os.ReadFile(cleanPath)
 	if err != nil {
 		return err
@@ -231,6 +236,7 @@ func (t *translator) flattenTranslations(prefix string, nested map[string]interf
 // GetLanguageFromContext 从上下文中获取语言
 // 参数:
 //   - ctx: 上下文
+//
 // 返回值:
 //   - SupportedLanguage: 语言类型
 func GetLanguageFromContext(ctx context.Context) SupportedLanguage {
@@ -244,6 +250,7 @@ func GetLanguageFromContext(ctx context.Context) SupportedLanguage {
 // 参数:
 //   - ctx: 父上下文
 //   - lang: 语言类型
+//
 // 返回值:
 //   - context.Context: 新的上下文
 func SetLanguageToContext(ctx context.Context, lang SupportedLanguage) context.Context {
@@ -253,6 +260,7 @@ func SetLanguageToContext(ctx context.Context, lang SupportedLanguage) context.C
 // ParseAcceptLanguage 解析Accept-Language头
 // 参数:
 //   - acceptLang: Accept-Language头的值
+//
 // 返回值:
 //   - SupportedLanguage: 解析出的语言
 func ParseAcceptLanguage(acceptLang string) SupportedLanguage {

@@ -30,48 +30,48 @@ type Cache interface {
 	Exists(ctx context.Context, keys ...string) (int64, error)
 	Expire(ctx context.Context, key string, expiration time.Duration) error
 	TTL(ctx context.Context, key string) (time.Duration, error)
-	
+
 	// 字符串操作
 	SetString(ctx context.Context, key, value string, expiration time.Duration) error
 	GetString(ctx context.Context, key string) (string, error)
 	Incr(ctx context.Context, key string) (int64, error)
 	Decr(ctx context.Context, key string) (int64, error)
-	
+
 	// 哈希操作
 	HSet(ctx context.Context, key string, values ...interface{}) error
 	HGet(ctx context.Context, key, field string) (string, error)
 	HGetAll(ctx context.Context, key string) (map[string]string, error)
 	HDel(ctx context.Context, key string, fields ...string) error
-	
+
 	// 列表操作
 	LPush(ctx context.Context, key string, values ...interface{}) error
 	RPush(ctx context.Context, key string, values ...interface{}) error
 	LPop(ctx context.Context, key string) (string, error)
 	RPop(ctx context.Context, key string) (string, error)
 	LLen(ctx context.Context, key string) (int64, error)
-	
+
 	// 集合操作
 	SAdd(ctx context.Context, key string, members ...interface{}) error
 	SRem(ctx context.Context, key string, members ...interface{}) error
 	SMembers(ctx context.Context, key string) ([]string, error)
 	SIsMember(ctx context.Context, key string, member interface{}) (bool, error)
-	
+
 	// 有序集合操作
 	ZAdd(ctx context.Context, key string, members ...redis.Z) error
 	ZRem(ctx context.Context, key string, members ...interface{}) error
 	ZRange(ctx context.Context, key string, start, stop int64) ([]string, error)
 	ZRangeWithScores(ctx context.Context, key string, start, stop int64) ([]redis.Z, error)
-	
+
 	// 管道操作
 	Pipeline() redis.Pipeliner
-	
+
 	// 事务操作
 	TxPipeline() redis.Pipeliner
-	
+
 	// 连接管理
 	Ping(ctx context.Context) error
 	Close() error
-	
+
 	// 获取原始客户端
 	GetClient() *redis.Client
 }
@@ -87,7 +87,7 @@ func NewRedisCache(config *CacheConfig) (*RedisCache, error) {
 	if config == nil {
 		return nil, fmt.Errorf("cache config is required")
 	}
-	
+
 	// 设置默认值
 	if config.Addr == "" {
 		config.Addr = "localhost:6379"
@@ -107,7 +107,7 @@ func NewRedisCache(config *CacheConfig) (*RedisCache, error) {
 	if config.WriteTimeout == 0 {
 		config.WriteTimeout = 3 * time.Second
 	}
-	
+
 	client := redis.NewClient(&redis.Options{
 		Addr:         config.Addr,
 		Password:     config.Password,
@@ -118,15 +118,15 @@ func NewRedisCache(config *CacheConfig) (*RedisCache, error) {
 		ReadTimeout:  config.ReadTimeout,
 		WriteTimeout: config.WriteTimeout,
 	})
-	
+
 	// 测试连接
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	if err := client.Ping(ctx).Err(); err != nil {
 		return nil, fmt.Errorf("failed to connect to Redis: %w", err)
 	}
-	
+
 	return &RedisCache{
 		client: client,
 		config: config,

@@ -30,6 +30,7 @@ func DefaultInterceptorConfig() *InterceptorConfig {
 // UnaryServerInterceptor 一元服务器拦截器
 // 参数:
 //   - config: 拦截器配置
+//
 // 返回值:
 //   - grpc.UnaryServerInterceptor: gRPC一元服务器拦截器
 func UnaryServerInterceptor(config *InterceptorConfig) grpc.UnaryServerInterceptor {
@@ -45,13 +46,13 @@ func UnaryServerInterceptor(config *InterceptorConfig) grpc.UnaryServerIntercept
 	) (interface{}, error) {
 		// 从metadata中提取语言信息
 		lang := extractLanguageFromMetadata(ctx, config)
-		
+
 		// 将语言信息添加到上下文中
 		ctx = SetLanguageToContext(ctx, lang)
-		
+
 		// 设置翻译器的当前语言
 		config.Translator.SetLanguage(lang)
-		
+
 		// 调用下一个处理器
 		return handler(ctx, req)
 	}
@@ -60,6 +61,7 @@ func UnaryServerInterceptor(config *InterceptorConfig) grpc.UnaryServerIntercept
 // StreamServerInterceptor 流服务器拦截器
 // 参数:
 //   - config: 拦截器配置
+//
 // 返回值:
 //   - grpc.StreamServerInterceptor: gRPC流服务器拦截器
 func StreamServerInterceptor(config *InterceptorConfig) grpc.StreamServerInterceptor {
@@ -75,16 +77,16 @@ func StreamServerInterceptor(config *InterceptorConfig) grpc.StreamServerInterce
 	) error {
 		// 从metadata中提取语言信息
 		lang := extractLanguageFromMetadata(ss.Context(), config)
-		
+
 		// 创建包装的流，将语言信息添加到上下文中
 		wrappedStream := &wrappedServerStream{
 			ServerStream: ss,
 			ctx:          SetLanguageToContext(ss.Context(), lang),
 		}
-		
+
 		// 设置翻译器的当前语言
 		config.Translator.SetLanguage(lang)
-		
+
 		// 调用下一个处理器
 		return handler(srv, wrappedStream)
 	}
@@ -107,6 +109,7 @@ func (w *wrappedServerStream) Context() context.Context {
 // 参数:
 //   - ctx: 上下文
 //   - config: 拦截器配置
+//
 // 返回值:
 //   - SupportedLanguage: 提取的语言
 func extractLanguageFromMetadata(ctx context.Context, config *InterceptorConfig) SupportedLanguage {
@@ -137,6 +140,7 @@ func extractLanguageFromMetadata(ctx context.Context, config *InterceptorConfig)
 // UnaryClientInterceptor 一元客户端拦截器
 // 参数:
 //   - lang: 要设置的语言
+//
 // 返回值:
 //   - grpc.UnaryClientInterceptor: gRPC一元客户端拦截器
 func UnaryClientInterceptor(lang SupportedLanguage) grpc.UnaryClientInterceptor {
@@ -157,6 +161,7 @@ func UnaryClientInterceptor(lang SupportedLanguage) grpc.UnaryClientInterceptor 
 // StreamClientInterceptor 流客户端拦截器
 // 参数:
 //   - lang: 要设置的语言
+//
 // 返回值:
 //   - grpc.StreamClientInterceptor: gRPC流客户端拦截器
 func StreamClientInterceptor(lang SupportedLanguage) grpc.StreamClientInterceptor {

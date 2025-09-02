@@ -18,22 +18,22 @@ type MetricsCollector interface {
 	// gRPC相关指标
 	RecordGRPCRequest(method string, err error)
 	RecordGRPCDuration(method string, duration time.Duration)
-	
+
 	// 数据库相关指标
 	UpdateDBConnections(active, idle, total int)
-	
+
 	// 业务指标
 	RecordBusinessMetric(metricType string)
-	
+
 	// 错误指标
 	RecordError(errorType, errorCode string)
-	
+
 	// 认证指标
 	RecordAuthAttempt(success bool)
-	
+
 	// 获取gRPC拦截器
 	GetGRPCInterceptor() grpc.UnaryServerInterceptor
-	
+
 	// 获取HTTP处理器
 	GetHTTPHandler() http.Handler
 }
@@ -61,7 +61,7 @@ type DefaultMetrics struct {
 // NewMetrics 创建新的指标收集器
 func NewMetrics(namespace string) *DefaultMetrics {
 	registry := prometheus.NewRegistry()
-	
+
 	m := &DefaultMetrics{
 		registry: registry,
 		grpcRequestsTotal: promauto.With(registry).NewCounterVec(
@@ -127,11 +127,11 @@ func NewMetrics(namespace string) *DefaultMetrics {
 			[]string{"result"},
 		),
 	}
-	
+
 	// 注册默认的Go运行时指标
 	registry.MustRegister(collectors.NewGoCollector())
 	registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
-	
+
 	return m
 }
 
@@ -179,19 +179,19 @@ func (m *DefaultMetrics) RecordAuthAttempt(success bool) {
 func (m *DefaultMetrics) GetGRPCInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		start := time.Now()
-		
+
 		resp, err := handler(ctx, req)
-		
+
 		duration := time.Since(start)
 		m.RecordGRPCDuration(info.FullMethod, duration)
 		m.RecordGRPCRequest(info.FullMethod, err)
-		
+
 		// 记录错误详情
 		if err != nil {
 			st := status.Convert(err)
 			m.RecordError("grpc", st.Code().String())
 		}
-		
+
 		return resp, err
 	}
 }
