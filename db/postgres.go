@@ -10,6 +10,7 @@ import (
 	"github.com/gocraft/dbr/v2"
 	_ "github.com/lib/pq"
 	vgokit "github.com/vera-byte/vgo-kit"
+	"github.com/vera-byte/vgo-kit/logger"
 	"go.uber.org/zap"
 )
 
@@ -59,7 +60,7 @@ func NewPostgresStore(dsn string) (*PostgresStore, error) {
 
 	// 启动连接监控
 
-	go monitorConnection(db, 10*time.Second, vgokit.Log.Logger)
+	go monitorConnection(db, 10*time.Second, vgokit.Log)
 
 	return &PostgresStore{
 		DB:      db,
@@ -68,7 +69,12 @@ func NewPostgresStore(dsn string) (*PostgresStore, error) {
 }
 
 // 连接健康监控
-func monitorConnection(db *sql.DB, interval time.Duration, logger *zap.Logger) {
+// monitorConnection 监控数据库连接健康状态
+// 参数:
+//   - db: 数据库连接实例
+//   - interval: 监控间隔时间
+//   - logger: 日志记录器接口
+func monitorConnection(db *sql.DB, interval time.Duration, logger logger.Logger) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 

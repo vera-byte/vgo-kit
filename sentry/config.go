@@ -1,27 +1,44 @@
 package sentry
 
-// LogConfig 日志配置结构体
-type LogConfig struct {
-	Level      string `yaml:"level" json:"level"`             // 日志级别: debug, info, warn, error, fatal
-	Directory  string `yaml:"directory" json:"directory"`     // 日志文件目录
-	Filename   string `yaml:"filename" json:"filename"`       // 日志文件名
-	Stdout     bool   `yaml:"stdout" json:"stdout"`           // 是否输出到终端
-	MaxSize    int    `yaml:"max_size" json:"max_size"`       // 单个日志文件最大大小(MB)
-	MaxBackups int    `yaml:"max_backups" json:"max_backups"` // 保留的旧日志文件最大数量
-	MaxAge     int    `yaml:"max_age" json:"max_age"`         // 保留旧日志文件的最大天数
-	Compress   bool   `yaml:"compress" json:"compress"`       // 是否压缩旧日志文件
-}
-
 // SentryConfig Sentry 配置结构体
+// 定义Sentry错误监控服务的配置参数
 type SentryConfig struct {
 	Enabled     bool   `yaml:"enabled" json:"enabled"`         // 是否启用 Sentry
 	DSN         string `yaml:"dsn" json:"dsn"`                 // Sentry DSN
 	Environment string `yaml:"environment" json:"environment"` // 环境名称
 	Debug       bool   `yaml:"debug" json:"debug"`             // 是否开启调试模式
+	SampleRate  float64 `yaml:"sample_rate" json:"sample_rate"` // 采样率 (0.0-1.0)
 }
 
-// Config 完整的日志和 Sentry 配置
-type Config struct {
-	Log    LogConfig    `yaml:"log" json:"log"`
-	Sentry SentryConfig `yaml:"sentry" json:"sentry"`
+// GetEnabled 获取是否启用Sentry
+// 返回: bool 是否启用
+func (c *SentryConfig) GetEnabled() bool {
+	return c.Enabled
+}
+
+// GetDSN 获取Sentry DSN
+// 返回: string DSN字符串
+func (c *SentryConfig) GetDSN() string {
+	return c.DSN
+}
+
+// GetEnvironment 获取环境名称
+// 返回: string 环境名称
+func (c *SentryConfig) GetEnvironment() string {
+	return c.Environment
+}
+
+// GetDebug 获取是否开启调试模式
+// 返回: bool 是否开启调试
+func (c *SentryConfig) GetDebug() bool {
+	return c.Debug
+}
+
+// GetSampleRate 获取采样率
+// 返回: float64 采样率
+func (c *SentryConfig) GetSampleRate() float64 {
+	if c.SampleRate <= 0 || c.SampleRate > 1 {
+		return 1.0 // 默认采样率
+	}
+	return c.SampleRate
 }

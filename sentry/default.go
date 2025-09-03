@@ -1,25 +1,13 @@
 package sentry
 
-func DefaultSentryConfig() *Config {
-	// 配置
-	config := Config{
-		Log: LogConfig{
-			Level:      "info",
-			Directory:  "./logs",
-			Filename:   "vgo.log",
-			Stdout:     true,
-			MaxSize:    100,
-			MaxBackups: 3,
-			MaxAge:     28,
-			Compress:   true,
-		},
-		Sentry: SentryConfig{
-			Enabled:     false,
-			DSN:         "your-sentry-dsn-here",
-			Environment: "development",
-			Debug:       false,
-		},
+// DefaultSentryConfig 返回默认的 Sentry 配置
+// 返回: *SentryConfig 默认配置实例
+func DefaultSentryConfig() *SentryConfig {
+	return &SentryConfig{
+		Enabled:     false,
+		DSN:         "",
+		Environment: "development",
+		Debug:       false,
+		SampleRate:  1.0,
 	}
-
-	return &config
 }

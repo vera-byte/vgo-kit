@@ -7,13 +7,15 @@ import (
 	"github.com/spf13/viper"
 	"github.com/vera-byte/vgo-kit/cache"
 	"github.com/vera-byte/vgo-kit/config"
+	"github.com/vera-byte/vgo-kit/logger"
 	"github.com/vera-byte/vgo-kit/metrics"
 	"github.com/vera-byte/vgo-kit/ratelimit"
 	"github.com/vera-byte/vgo-kit/sentry"
 )
 
 var (
-	Log         *sentry.Logger
+	Log         logger.Logger
+	SentryClient sentry.Client
 	Cfg         *viper.Viper
 	Metrics     metrics.MetricsCollector
 	Cache       cache.Cache
@@ -34,32 +36,38 @@ func init() {
 		panic(err)
 	}
 
-	// 构建sentry配置，分别解析log和sentry部分
-	var cfg *sentry.Config
-	if v.IsSet("log") || v.IsSet("sentry") {
-		cfg = &sentry.Config{}
-
-		// 解析log配置
-		if v.IsSet("log") {
-			if unmarshalErr := v.UnmarshalKey("log", &cfg.Log); unmarshalErr != nil {
-				panic(unmarshalErr)
-			}
-		}
-
-		// 解析sentry配置
-		if v.IsSet("sentry") {
-			if unmarshalErr := v.UnmarshalKey("sentry", &cfg.Sentry); unmarshalErr != nil {
-				panic(unmarshalErr)
-			}
+	// 初始化日志系统
+	var logConfig *logger.BaseConfig
+	if v.IsSet("log") {
+		logConfig = &logger.BaseConfig{}
+		if unmarshalErr := v.UnmarshalKey("log", logConfig); unmarshalErr != nil {
+			panic(unmarshalErr)
 		}
 	}
 
-	// 初始化日志器，如果cfg为nil则使用默认配置
-	log, err := sentry.InitLogger(cfg)
+	// 创建日志实例
+	logFactory := logger.NewZapFactory()
+	loggerInstance, err := logFactory.CreateLogger(logConfig)
 	if err != nil {
 		panic(err)
 	}
-	Log = log
+	Log = loggerInstance
+
+	// 初始化Sentry客户端
+	var sentryConfig *sentry.SentryConfig
+	if v.IsSet("sentry") {
+		sentryConfig = &sentry.SentryConfig{}
+		if unmarshalErr := v.UnmarshalKey("sentry", sentryConfig); unmarshalErr != nil {
+			panic(unmarshalErr)
+		}
+	}
+
+	// 创建Sentry客户端
+	sentryClient, err := sentry.NewClient(sentryConfig)
+	if err != nil {
+		panic(err)
+	}
+	SentryClient = sentryClient
 }
 
 // isTestEnvironment 检查是否在测试环境中
