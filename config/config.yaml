@@ -33,3 +33,41 @@ metrics:
 ratelimit:
   enabled: true
   requests_per_second: 100
+
+# gRPC configuration
+grpc:
+  server:
+    host: "0.0.0.0"
+    port: 50051
+    max_recv_msg_size: 4194304  # 4MB
+    max_send_msg_size: 4194304  # 4MB
+    connection_timeout: "30s"
+    keepalive:
+      time: "30s"
+      timeout: "5s"
+      permit_without_stream: true
+    tls:
+      enabled: false
+      cert_file: "/path/to/server.crt"
+      key_file: "/path/to/server.key"
+      ca_file: "/path/to/ca.crt"
+  clients:
+    user-service:
+      target: "user-service:50051"
+      connection_timeout: "10s"
+      keepalive:
+        time: "30s"
+        timeout: "5s"
+        permit_without_stream: true
+      retry:
+        max_attempts: 3
+        initial_backoff: "1s"
+        max_backoff: "30s"
+        backoff_multiplier: 2.0
+    order-service:
+      target: "order-service:50052"
+      connection_timeout: "10s"
+      keepalive:
+        time: "30s"
+        timeout: "5s"
+        permit_without_stream: true
