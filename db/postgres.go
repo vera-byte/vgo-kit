@@ -15,20 +15,29 @@ import (
 )
 
 // PostgresStore PostgreSQL存储
+// 提供统一的 *sql.DB 与 dbr.Session 访问入口，确保仅使用单一连接池
+// 字段:
+//   - DB: 标准库数据库连接（连接池）
+//   - Session: dbr会话对象（基于同一*sql.DB，不创建新的连接池）
 type PostgresStore struct {
 	DB      *sql.DB
 	Session *dbr.Session
 }
 
 // NewPostgresStore 创建PostgreSQL存储实例
+// 参数:
+//   - dsn: 数据源名称（支持postgres://或关键字形式）
+// 返回:
+//   - *PostgresStore: 存储实例
+//   - error: 错误信息
 func NewPostgresStore(dsn string) (*PostgresStore, error) {
-	// 标准化DSN格式
-	if !strings.Contains(dsn, "://") {
+	// 标准化DSN前缀（仅将 postgresql:// 规范为 postgres://，其余格式保持不变）
+	if strings.HasPrefix(dsn, "postgresql://") {
 		dsn = "postgres://" + strings.TrimPrefix(dsn, "postgresql://")
 	}
 
-	// 创建标准连接
-	db, err := sql.Open("postgres", dsn)
+	// 通过 dbr.Open 创建连接（内部持有单一 *sql.DB 连接池）
+	conn, err := dbr.Open("postgres", dsn, nil)
 	if err != nil {
 		return nil, fmt.Errorf("db open failed: %w", err)
 	}
@@ -36,34 +45,22 @@ func NewPostgresStore(dsn string) (*PostgresStore, error) {
 	// 带超时的连接测试
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if pingErr := db.PingContext(ctx); pingErr != nil {
-		if closeErr := db.Close(); closeErr != nil {
-			return nil, fmt.Errorf("db ping failed: %w, close error: %v", pingErr, closeErr)
-		}
+	if pingErr := conn.DB.PingContext(ctx); pingErr != nil {
+		_ = conn.DB.Close()
 		return nil, fmt.Errorf("db ping failed: %w", pingErr)
 	}
 
 	// 优化连接池配置
-	db.SetMaxOpenConns(25)                  // 建议值: (2 * CPU核心数) + 备用连接
-	db.SetMaxIdleConns(5)                   // 小于MaxOpenConns
-	db.SetConnMaxLifetime(30 * time.Minute) // 避免云服务断开
-	db.SetConnMaxIdleTime(5 * time.Minute)  // 主动回收闲置连接
+	conn.DB.SetMaxOpenConns(25)                  // 建议值: (2 * CPU核心数) + 备用连接
+	conn.DB.SetMaxIdleConns(5)                   // 小于MaxOpenConns
+	conn.DB.SetConnMaxLifetime(30 * time.Minute) // 避免云服务断开
+	conn.DB.SetConnMaxIdleTime(5 * time.Minute)  // 主动回收闲置连接
 
-	// 创建dbr连接
-	conn, err := dbr.Open("postgres", dsn, nil)
-	if err != nil {
-		if closeErr := db.Close(); closeErr != nil {
-			return nil, fmt.Errorf("dbr open failed: %w, close error: %v", err, closeErr)
-		}
-		return nil, fmt.Errorf("dbr open failed: %w", err)
-	}
-
-	// 启动连接监控
-
-	go monitorConnection(db, 10*time.Second, vgokit.Log)
+	// 启动连接健康监控（仅记录告警，不影响业务流程）
+	go monitorConnection(conn.DB, 10*time.Second, vgokit.Log)
 
 	return &PostgresStore{
-		DB:      db,
+		DB:      conn.DB,
 		Session: conn.NewSession(nil),
 	}, nil
 }
@@ -90,6 +87,7 @@ func monitorConnection(db *sql.DB, interval time.Duration, logger logger.Logger)
 }
 
 // Close 关闭数据库连接（带重试机制）
+// 返回: error 关闭过程中产生的错误
 func (s *PostgresStore) Close() error {
 	const maxRetries = 3
 	var errs []error
@@ -104,8 +102,8 @@ func (s *PostgresStore) Close() error {
 		errs = append(errs, fmt.Errorf("failed to close %s after %d retries", name, maxRetries))
 	}
 
+	// 仅关闭底层 *sql.DB 连接池；dbr.Session 基于该连接池，无需单独关闭
 	closeFunc("DB", s.DB.Close)
-	closeFunc("dbr session", s.Session.Close)
 
 	if len(errs) > 0 {
 		return fmt.Errorf("shutdown errors: %v", errs)

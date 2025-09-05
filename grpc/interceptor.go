@@ -2,9 +2,9 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	vgologger "github.com/vera-byte/vgo-kit/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -117,7 +117,7 @@ func (li *LoggingInterceptor) UnaryClientInterceptor() grpc.UnaryClientIntercept
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		start := time.Now()
 		
-		// 添加请求ID到元数据
+		// 添加请求ID到元数据（使用UUID确保全局唯一）
 		ctx = addRequestIDToContext(ctx)
 		
 		li.logger.Info("gRPC client request started",
@@ -157,7 +157,7 @@ func (li *LoggingInterceptor) StreamClientInterceptor() grpc.StreamClientInterce
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		start := time.Now()
 		
-		// 添加请求ID到元数据
+		// 添加请求ID到元数据（使用UUID确保全局唯一）
 		ctx = addRequestIDToContext(ctx)
 		
 		li.logger.Info("gRPC client stream started",
@@ -254,12 +254,12 @@ func getRequestID(md metadata.MD) string {
 	return "unknown"
 }
 
-// addRequestIDToContext 向上下文添加请求ID
+// addRequestIDToContext 向上下文添加请求ID（使用UUID）
 // ctx: 上下文
 // 返回: 包含请求ID的上下文
 func addRequestIDToContext(ctx context.Context) context.Context {
-	// 生成简单的请求ID (实际项目中可以使用UUID)
-	requestID := fmt.Sprintf("req-%d", time.Now().UnixNano())
+	// 使用 vgo-kit/logger 的 GenerateRequestID 生成UUID
+	requestID := vgologger.GenerateRequestID()
 	md := metadata.Pairs("request-id", requestID)
 	return metadata.NewOutgoingContext(ctx, md)
 }
